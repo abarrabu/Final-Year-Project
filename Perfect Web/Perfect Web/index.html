@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herbal Plant Disease Detection System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image:  url('clover-leaves-plants.jpg'); /* Replace 'background-image.jpg' with your image path */
+            background-size: cover;
+            background-position: center;
+        }
+
+        #container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8); /* Adjust the opacity and color as needed */
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #webcam-container {
+            margin-bottom: 20px;
+        }
+
+        #label-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .label-item {
+            width: 100px;
+            margin: 5px;
+            padding: 10px;
+            background-color: rgba(224, 224, 224, 0.8); /* Adjust the opacity and color as needed */
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .highlight {
+            background-color: yellow; /* Adjust the highlight color */
+        }
+
+        #suggestions {
+            margin-top: 20px;
+            text-align: left;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.8); /* Adjust the opacity and color as needed */
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #suggestions h2 {
+            margin-bottom: 10px;
+        }
+
+        #suggestions ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #suggestions ul li {
+            margin-bottom: 5px;
+        }
+
+        #suggestions ul li:before {
+            content: "•";
+            margin-right: 5px;
+        }
+
+        #startButton, #closeButton {
+            background-color: #0047AB; /* Cobalt Blue */
+            color: white; /* White text color */
+            padding: 10px 20px; /* Padding for the buttons */
+            margin: 5px; /* Margin for spacing */
+            border: none; /* No border */
+            border-radius: 4px; /* Rounded corners */
+            cursor: pointer; /* Cursor style */
+        }
+
+        #startButton:hover, #closeButton:hover {
+            background-color: #00274D; /* Darker shade of Cobalt Blue on hover */
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Medicinal Plant Disease Detection System</h1>
+        <button id="startButton" type="button" onclick="toggleCamera()">Start</button>
+        <button id="closeButton" type="button" onclick="closeCamera()">Close</button>
+        <div id="webcam-container"></div>
+        <div id="label-container"></div>
+        <div id="suggestions">
+            <h2>Suggestions:</h2>
+            <ul id="suggestion-list">
+                <!-- Suggestions will be added dynamically here -->
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script type="text/javascript">
+        const URL = "https://teachablemachine.withgoogle.com/models/BnmKLG-iV/";
+
+        let model, webcam, labelContainer, maxPredictions;
+
+        async function init() {
+            try {
+                const modelURL = URL + "model.json";
+                const metadataURL = URL + "metadata.json";
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+
+                const flip = true;
+                webcam = new tmImage.Webcam(400, 400, flip);
+                await webcam.setup();
+                await webcam.play();
+                window.requestAnimationFrame(loop);
+
+                document.getElementById("webcam-container").appendChild(webcam.canvas);
+                labelContainer = document.getElementById("label-container");
+                for (let i = 0; i < maxPredictions; i++) {
+                    const labelItem = document.createElement("div");
+                    labelItem.classList.add("label-item");
+                    labelContainer.appendChild(labelItem);
+                }
+            } catch (error) {
+                console.error('Error initializing:', error);
+                alert('Error initializing the webcam. Please check your camera and try again.');
+            }
+        }
+
+        async function loop() {
+            webcam.update();
+            await predict();
+            window.requestAnimationFrame(loop);
+        }
+
+        async function predict() {
+            const prediction = await model.predict(webcam.canvas);
+            let highestProbabilityIndex = 0;
+            let highestProbability = 0;
+            for (let i = 0; i < maxPredictions; i++) {
+                if (prediction[i].probability > highestProbability) {
+                    highestProbability = prediction[i].probability;
+                    highestProbabilityIndex = i;
+                }
+                const classPrediction =
+                    prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+                labelContainer.childNodes[i].innerText = classPrediction;
+            }
+
+            // Highlight the predicted class label
+            labelContainer.childNodes.forEach((item, index) => {
+                if (index === highestProbabilityIndex) {
+                    item.classList.add('highlight');
+                } else {
+                    item.classList.remove('highlight');
+                }
+            });
+
+            // Suggestions for the detected class only
+            const suggestionList = document.getElementById("suggestion-list");
+            suggestionList.innerHTML = ""; // Clear previous suggestions
+            const classPrediction = prediction[highestProbabilityIndex].className;
+            let suggestion = "";
+            switch (classPrediction) {
+                case "Pungai Leaf Pongamia Pinnata":
+                    suggestion = "Good Plant ";
+                    break;
+                case "Pungai Leaf spot and blight":
+                    suggestion = "	Foliar spray of Bavistin fungicidal solution (0.1%) is found to be effective in minimizing the disease.";
+                    break;
+                case "Pungai Leaf Gall midge":
+                    suggestion = "Neem Oil: Apply neem oil to affected areas to deter gall midges and reduce their population.Bacillus thuringiensis (Bt): Use Bt-based biopesticides to target gall midge larvae and control their spread.	Crop Rotation: Rotate Pongamia pinnata crops with non-host plants to disrupt gall midge life cycles.	Traps: Set up yellow sticky traps to monitor and capture adult gall midges, reducing their numbers.	Natural Predators: Introduce natural enemies like ladybugs or lacewings to prey on gall midge populations naturally.";
+                    break;
+                case "Thulasi Health":
+                    suggestion = "Good Plant";
+                    break;
+                case "Thulasi Bacterial":
+                    suggestion = "Controlling bacterial diseases in Tulasi plants requires a combination of proactive measures.Start with meticulous sanitation practices, promptly removing any infected plant material to prevent bacterial spread.Pruning the plants to improve air circulation and avoiding overhead watering can reduce humidity levels, creating an environment less conducive to bacterial growth.Proper spacing between plants is crucial for adequate airflow. Additionally, sterilize gardening tools to prevent cross-contamination.";
+                    break;
+                case "Thulasi Fungal":
+                    suggestion = "Controlling fungal diseases in Tulasi plants requires a multi-faceted approach to prevent their occurrence and manage any outbreaks effectively.Avoid overhead watering to prevent water from splashing onto the leaves, as wet foliage creates an ideal environment for fungal pathogens.If watering is necessary, irrigate at the base of the plant. Remove any infected plant material promptly to prevent the spread of fungal spores.Regularly inspect Tulasi leaves for signs of fungal diseases such as powdery mildew or leaf spot, and treat them promptly with organic fungicides or biofungicides when necessary.";
+                    break;  
+                case "Thulasi Pest":
+                    suggestion = "To effectively control pest diseases on Tulasi plants, it's crucial to implement a comprehensive set of measures.Start by regularly inspecting the plants for any signs of pest infestation, such as yellowing leaves, holes, or visible pests like aphids or caterpillars.Applying organic insecticides or insecticidal soaps when necessary can target specific pests while minimizing harm to beneficial insects.Implementing physical barriers such as row covers can also prevent pests from accessing the plants.";
+                    break;  
+                default:
+                    suggestion = "No specific suggestion available for this face shape.";
+                    break;
+            }
+            const suggestionItem = document.createElement("li");
+            suggestionItem.innerText = suggestion;
+            suggestionList.appendChild(suggestionItem);
+        }
+
+        function toggleCamera() {
+            const startButton = document.getElementById("startButton");
+            if (!webcam) {
+                init();
+                startButton.innerText = "Stop";
+            } else {
+                webcam.pause();
+                webcam.stop();
+                webcam = null;
+                startButton.innerText = "Start";
+            }
+        }
+
+        function closeCamera() {
+            if (webcam) {
+                webcam.pause();
+                webcam.stop();
+                webcam = null;
+                document.getElementById("webcam-container").innerHTML = "";
+                const startButton = document.getElementById("startButton");
+                startButton.innerText = "Start";
+            }
+        }
+    </script>
+</body>
+</html>

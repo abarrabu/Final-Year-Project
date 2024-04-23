@@ -1,0 +1,7 @@
+0 Pungai Leaf Pongamia Pinnata Good
+1 Pungai Leaf spot and blight
+2 Pungai Leaf Gall midge 
+3 Thulasi Health
+4 Thulasi Bacterial 
+5 Thulasi Fungal
+6 Thulasi Pest

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+/* Reset default browser styles */
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+/* Apply a background color to the body */
+body {
+    background-color: #f0f0f0; /* Light gray */
+}
+
+/* Center the video container */
+#video-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Style the video background */
+#video-background {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translateX(-50%) translateY(-50%);
+    z-index: -1000;
+}
+
+/* Style the container for the login form */
+#container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent white */
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Style the input fields */
+input[type="text"],
+input[type="password"] {
+    width: 200px; /* Equal width for both text boxes */
+    padding: 8px; /* Padding for better appearance */
+    margin: 5px; /* Margin for spacing */
+    border: 1px solid #ccc; /* Border for the input fields */
+    border-radius: 4px; /* Rounded corners */
+}
+
+/* Style the login button */
+button[type="submit"] {
+    padding: 8px 16px; /* Padding for the button */
+    margin-top: 10px; /* Margin from the text boxes */
+    background-color: #32CD32; /* Limegreen color for the button */
+    color: white; /* White text color */
+    border: none; /* No border */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Cursor style */
+}
+
+/* Style the register link */
+button {
+    color: #32CD32; /* Limegreen color for the link */
+    text-decoration: none; /* Remove underline */
+}
+/* Style the register link */
+.register-link {
+    color: #0047AB; /* Cobalt Blue color for the link */
+    text-decoration: none; /* Remove underline */
+}
+
+    </style>	
+</head>
+<body>
+    <div id="video-container">
+        <video autoplay muted loop id="video-background">
+            <source src="C:\Users\91701\Downloads\bg1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div id="container">
+            <h1>Login</h1>
+            <form id="loginForm">
+                <div>
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <p>Don't have an account? <a href="register.html" class="register-link">Register here</a>.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Check if credentials match (you can replace this with your actual authentication logic)
+            // For demonstration purposes, let's use localStorage to store user credentials
+            const storedUsername = localStorage.getItem('username');
+            const storedPassword = localStorage.getItem('password');
+
+            if (username === storedUsername && password === storedPassword) {
+                // Redirect to index page after successful login
+                window.location.href = 'index.html';
+            } else {
+                alert('Invalid username or password. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
